@@ -1,17 +1,15 @@
 [project]
 name = "projet-data"
 version = "0.1.0"
-description = "Add your description here"
+description = "Dashboard sur la vulnérabilité des personnes âgées par EPCI en France métropolitaine"
 readme = "README.md"
 authors = [
     { name = "Parrin Lilou", email = "lilou.parrin@edu.esiee.fr" }
 ]
 requires-python = ">=3.14"
-dependencies = []
-
-[project.scripts]
-projet-data = "projet_data:main"
-
-[build-system]
-requires = ["uv_build>=0.12.10,<0.13.0"]
-build-backend = "uv_build"
+dependencies = [
+    "dash>=4.4.1",
+    "openpyxl>=3.1.5",
+    "pandas>=3.0.6",
+    "plotly>=7.1.0",
+]
