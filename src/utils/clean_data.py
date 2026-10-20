@@ -48,6 +48,7 @@ def nettoyer_fond_carte() -> set[str]:
     fond["features"] = [
         contour for contour in fond["features"] if est_en_metropole(contour)
     ]
+    config.DOSSIER_NETTOYE.mkdir(parents=True, exist_ok=True)
     # Écriture compacte (sans espaces) pour alléger le fichier chargé par le dashboard.
     config.FOND_CARTE.write_text(
         json.dumps(fond, ensure_ascii=False, separators=(",", ":")), encoding="utf-8"
