@@ -1,5 +1,6 @@
 """Paramètres de configuration du projet : sources de données, chemins et libellés."""
 
+from dataclasses import dataclass
 from pathlib import Path
 
 # --- Chemins -----------------------------------------------------------------
@@ -8,7 +9,8 @@ DOSSIER_DONNEES = RACINE / "data"
 DOSSIER_BRUT = DOSSIER_DONNEES / "raw"
 BASE_SQLITE = DOSSIER_DONNEES / "db.sqlite"
 FOND_CARTE_BRUT = DOSSIER_BRUT / "epci.geojson"
-FOND_CARTE = DOSSIER_DONNEES / "epci_metropole.geojson"
+DOSSIER_NETTOYE = DOSSIER_DONNEES / "cleaned"
+FOND_CARTE = DOSSIER_NETTOYE / "epci_metropole.geojson"
 
 TABLE_BRUTE = "raw"
 TABLE_NETTOYEE = "cleaned"
@@ -50,11 +52,85 @@ CODE_SEXE_TOTAL = "T"  # modalité « ensemble » des indicateurs détaillés pa
 # France métropolitaine, Corse comprise. L'outre-mer est exclu : ses données sont incomplètes.
 EMPRISE_METROPOLE = (-5.5, 41.0, 10.0, 51.5)
 
+
 # --- Indicateurs du dashboard ------------------------------------------------
-# Nom de l'indicateur dans la table nettoyée -> libellé affiché dans les graphiques.
-INDICATEURS: dict[str, str] = {
-    "part_75_plus": "Part des 75 ans et plus (%)",
-    "part_75_seuls": "Part des 75 ans et plus vivant seuls (%)",
-    "taux_pauvrete": "Taux de pauvreté (%)",
-    "apl_medecins": "Accessibilité aux médecins généralistes (consultations/an/habitant)",
+@dataclass(frozen=True)
+class Indicateur:
+    """Description d'un indicateur affiché dans le dashboard."""
+
+    nom: str  # nom court, utilisé dans les titres et le menu
+    libelle: str  # nom avec unité, utilisé sur les axes et la légende
+    unite: str  # texte ajouté après une valeur (" %", " consultations")
+    largeur_classe: float  # largeur des tranches de l'histogramme
+    lecture: str  # phrase qui explique comment lire les couleurs de la carte
+    echelle_inversee: bool = False  # True si une valeur basse est défavorable
+
+
+# Nom de l'indicateur dans la table nettoyée -> sa description.
+INDICATEURS: dict[str, Indicateur] = {
+    "part_75_plus": Indicateur(
+        nom="Part des 75 ans et plus",
+        libelle="Part des 75 ans et plus (%)",
+        unite=" %",
+        largeur_classe=1.0,
+        lecture="plus la couleur est foncée, plus la part des 75 ans et plus est élevée.",
+    ),
+    "part_75_seuls": Indicateur(
+        nom="Part des 75 ans et plus vivant seuls",
+        libelle="Part des 75 ans et plus vivant seuls (%)",
+        unite=" %",
+        largeur_classe=1.0,
+        lecture="plus la couleur est foncée, plus les 75 ans et plus vivent souvent seuls.",
+    ),
+    "taux_pauvrete": Indicateur(
+        nom="Taux de pauvreté",
+        libelle="Taux de pauvreté (%)",
+        unite=" %",
+        largeur_classe=1.0,
+        lecture="plus la couleur est foncée, plus le taux de pauvreté est élevé.",
+    ),
+    "apl_medecins": Indicateur(
+        nom="Accessibilité aux médecins généralistes",
+        libelle="Consultations accessibles par an et par habitant",
+        unite=" consultations",
+        largeur_classe=0.25,
+        lecture=(
+            "plus la couleur est foncée, plus l'accès aux médecins généralistes est faible "
+            "(échelle inversée par rapport aux autres indicateurs)."
+        ),
+        # Peu de consultations accessibles = territoire plus fragile : le foncé doit
+        # toujours signaler la fragilité, donc l'échelle de couleurs est retournée.
+        echelle_inversee=True,
+    ),
 }
+INDICATEUR_PAR_DEFAUT = "part_75_plus"
+
+# --- Dashboard ---------------------------------------------------------------
+NOM_DASHBOARD = "Vieillir en France"
+TITRE_DASHBOARD = "Vieillir en France : où sont les territoires fragiles ?"
+HOTE = "127.0.0.1"
+PORT = 8050
+MODE_DEBUG = False
+
+# Fond de carte sans tuiles : la carte s'affiche même sans connexion internet.
+STYLE_CARTE = "white-bg"
+# Cadrage de la carte : la France entière tient dans la hauteur des graphiques.
+# Un zoom plus grand rapproche la carte (ajuster par pas de 0,1).
+CENTRE_CARTE = {"lat": 46.45, "lon": 2.4}
+ZOOM_CARTE = 4.3
+HAUTEUR_GRAPHIQUE = 470
+# Même marge haute pour tous les graphiques, afin que leurs titres soient alignés.
+MARGE_HAUTE_GRAPHIQUE = 50
+# Écriture française des nombres : virgule décimale, espace pour les milliers.
+SEPARATEURS_NOMBRES = ", "
+ECHELLE_COULEURS = "YlOrRd"
+# Couleur d'accent, reprise dans assets/style.css pour le curseur et le menu.
+COULEUR_HISTOGRAMME = "#b23a0a"
+# Texte des graphiques, accordé à celui de la page.
+POLICE_GRAPHIQUES = {
+    "family": 'system-ui, -apple-system, "Segoe UI", sans-serif',
+    "color": "#1f2933",
+}
+# Aspect des éléments non concernés quand une tranche est sélectionnée par un clic.
+COULEUR_BARRE_ESTOMPEE = "#d5d5d5"
+OPACITE_EPCI_ESTOMPE = 0.12

@@ -13,3 +13,7 @@ dependencies = [
     "pandas>=3.0.6",
     "plotly>=7.1.0",
 ]
+
+[[tool.mypy.overrides]]
+module = ["pandas.*", "plotly.*"]
+ignore_missing_imports = true
