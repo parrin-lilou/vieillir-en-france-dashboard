@@ -20,7 +20,39 @@ body {
 .bandeau-contenu {
     max-width: 1500px;
     margin: 0 auto;
-    padding: 14px 24px;
+    padding: 0 24px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 60px;
+}
+
+/* Liens vers les pages, la page affichée étant soulignée */
+.navigation {
+    display: flex;
+    gap: 4px;
+}
+
+.lien-nav {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 14px;
+    color: #3d4852;
+    text-decoration: none;
+    border-bottom: 3px solid transparent;
+}
+
+.lien-nav:hover {
+    color: #1f2933;
+}
+
+.lien-nav.actif {
+    color: #1f2933;
+    font-weight: 700;
+    border-bottom-color: #b23a0a;
 }
 
 .marque {
@@ -71,10 +103,45 @@ body {
     max-width: 420px;
 }
 
+/* Menus de la page « Comparer » : trois de même largeur */
+.reglage-comparer {
+    flex: 1 1 240px;
+    max-width: 380px;
+}
+
 .reglage-annee {
     /* Largeur plafonnée : un curseur trop long est moins lisible et moins maniable. */
     flex: 1 1 420px;
-    max-width: 620px;
+    max-width: 720px;
+}
+
+/* Bouton de lecture et curseur d'années, sur une même ligne */
+.ligne-curseur {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.curseur-conteneur {
+    flex: 1;
+    min-width: 0;
+}
+
+.bouton-lecture {
+    min-height: 36px;
+    padding: 0 14px;
+    border: 1px solid #b23a0a;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #b23a0a;
+    font: inherit;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.bouton-lecture:hover {
+    background: #fbeee6;
 }
 
 .etiquette {
