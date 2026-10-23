@@ -58,46 +58,59 @@ EMPRISE_METROPOLE = (-5.5, 41.0, 10.0, 51.5)
 class Indicateur:
     """Description d'un indicateur affiché dans le dashboard."""
 
-    nom: str  # nom court, utilisé dans les titres et le menu
+    nom: str  # nom complet, utilisé dans les titres et les menus
+    nom_court: str  # nom abrégé, utilisé là où la place manque (matrice de corrélation)
+    nom_en_phrase: str  # nom précédé de son article, pour les phrases générées
     libelle: str  # nom avec unité, utilisé sur les axes et la légende
     unite: str  # texte ajouté après une valeur (" %", " consultations")
     largeur_classe: float  # largeur des tranches de l'histogramme
-    lecture: str  # phrase qui explique comment lire les couleurs de la carte
     echelle_inversee: bool = False  # True si une valeur basse est défavorable
+
+    @property
+    def lecture(self) -> str:
+        """Renvoie la phrase qui explique comment lire les couleurs de la carte."""
+        sens = "basses" if self.echelle_inversee else "élevées"
+        phrase = (
+            f"le foncé signale les valeurs les plus {sens} pour {self.nom_en_phrase}"
+        )
+        if self.echelle_inversee:
+            phrase += " (échelle inversée par rapport aux autres indicateurs)"
+        return phrase + "."
 
 
 # Nom de l'indicateur dans la table nettoyée -> sa description.
 INDICATEURS: dict[str, Indicateur] = {
     "part_75_plus": Indicateur(
         nom="Part des 75 ans et plus",
+        nom_court="75 ans et plus",
+        nom_en_phrase="la part des 75 ans et plus",
         libelle="Part des 75 ans et plus (%)",
         unite=" %",
         largeur_classe=1.0,
-        lecture="plus la couleur est foncée, plus la part des 75 ans et plus est élevée.",
     ),
     "part_75_seuls": Indicateur(
         nom="Part des 75 ans et plus vivant seuls",
+        nom_court="75 ans et plus seuls",
+        nom_en_phrase="la part des 75 ans et plus vivant seuls",
         libelle="Part des 75 ans et plus vivant seuls (%)",
         unite=" %",
         largeur_classe=1.0,
-        lecture="plus la couleur est foncée, plus les 75 ans et plus vivent souvent seuls.",
     ),
     "taux_pauvrete": Indicateur(
         nom="Taux de pauvreté",
+        nom_court="Pauvreté",
+        nom_en_phrase="le taux de pauvreté",
         libelle="Taux de pauvreté (%)",
         unite=" %",
         largeur_classe=1.0,
-        lecture="plus la couleur est foncée, plus le taux de pauvreté est élevé.",
     ),
     "apl_medecins": Indicateur(
         nom="Accessibilité aux médecins généralistes",
+        nom_court="Accès aux médecins",
+        nom_en_phrase="l'accessibilité aux médecins généralistes",
         libelle="Consultations accessibles par an et par habitant",
         unite=" consultations",
         largeur_classe=0.25,
-        lecture=(
-            "plus la couleur est foncée, plus l'accès aux médecins généralistes est faible "
-            "(échelle inversée par rapport aux autres indicateurs)."
-        ),
         # Peu de consultations accessibles = territoire plus fragile : le foncé doit
         # toujours signaler la fragilité, donc l'échelle de couleurs est retournée.
         echelle_inversee=True,
@@ -105,8 +118,20 @@ INDICATEURS: dict[str, Indicateur] = {
 }
 INDICATEUR_PAR_DEFAUT = "part_75_plus"
 
+# Choix affichés à l'ouverture de la page « Comparer » : l'âge face à la pauvreté,
+# les points étant coloriés selon l'isolement.
+COMPARAISON_PAR_DEFAUT = {
+    "x": "part_75_plus",
+    "y": "taux_pauvrete",
+    "couleur": "part_75_seuls",
+}
+SANS_COULEUR = "aucune"  # valeur du menu « couleur » qui désactive le coloriage
+
 # --- Dashboard ---------------------------------------------------------------
 NOM_DASHBOARD = "Vieillir en France"
+# Pages du dashboard : adresse -> texte du lien dans la barre de navigation.
+NAVIGATION = {"/explorer": "Explorer", "/comparer": "Comparer"}
+PAGE_PAR_DEFAUT = "/explorer"  # page affichée à l'adresse racine « / »
 TITRE_DASHBOARD = "Vieillir en France : où sont les territoires fragiles ?"
 HOTE = "127.0.0.1"
 PORT = 8050
@@ -119,6 +144,8 @@ STYLE_CARTE = "white-bg"
 CENTRE_CARTE = {"lat": 46.45, "lon": 2.4}
 ZOOM_CARTE = 4.3
 HAUTEUR_GRAPHIQUE = 470
+# Durée d'affichage de chaque année pendant l'animation, en millisecondes.
+INTERVALLE_ANIMATION_MS = 1500
 # Même marge haute pour tous les graphiques, afin que leurs titres soient alignés.
 MARGE_HAUTE_GRAPHIQUE = 50
 # Écriture française des nombres : virgule décimale, espace pour les milliers.
@@ -134,3 +161,5 @@ POLICE_GRAPHIQUES = {
 # Aspect des éléments non concernés quand une tranche est sélectionnée par un clic.
 COULEUR_BARRE_ESTOMPEE = "#d5d5d5"
 OPACITE_EPCI_ESTOMPE = 0.12
+# Échelle divergente pour les corrélations : bleu si négative, rouge si positive.
+ECHELLE_CORRELATION = "RdBu_r"
