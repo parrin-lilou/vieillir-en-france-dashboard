@@ -48,6 +48,26 @@ def annees_disponibles(indicateur: str) -> list[int]:
     return [int(annee) for annee in valeurs_par_annee(indicateur).columns]
 
 
+def derniere_annee(indicateur: str) -> int:
+    """Renvoie l'année la plus récente disponible pour un indicateur."""
+    return annees_disponibles(indicateur)[-1]
+
+
+def tableau_comparaison() -> pd.DataFrame:
+    """Renvoie un tableau large : une ligne par EPCI, une colonne par indicateur.
+
+    Chaque indicateur est pris à sa dernière année disponible, puisque les sources
+    n'ont pas toutes les mêmes années. La table ``cleaned`` reste au format long :
+    ce tableau large est reconstruit ici, seulement pour comparer les indicateurs.
+    """
+    colonnes = {
+        nom: valeurs_par_annee(nom)[derniere_annee(nom)] for nom in config.INDICATEURS
+    }
+    tableau = pd.DataFrame(colonnes)
+    tableau.insert(0, "libgeo", noms_epci())
+    return tableau
+
+
 def plage_valeurs(tableau: pd.DataFrame, largeur_classe: float) -> tuple[float, float]:
     """Renvoie les bornes encadrant toutes les valeurs, alignées sur les tranches.
 

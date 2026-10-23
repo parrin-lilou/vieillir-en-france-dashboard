@@ -11,6 +11,7 @@ from typing import Any
 import pandas as pd
 
 import config
+from src.utils.validation import valider_table
 
 COLONNES_NETTOYEES = ["codgeo", "libgeo", "indicateur", "annee", "valeur"]
 
@@ -115,6 +116,8 @@ def main() -> None:
     """Nettoie le fond de carte et les indicateurs, puis alimente la table ``cleaned``."""
     codes_metropole = nettoyer_fond_carte()
     table = construire_table_nettoyee(lire_table_brute(), codes_metropole)
+    # Contrôle avant écriture : rien n'est enregistré si une ligne est incorrecte.
+    valider_table(table)
     with sqlite3.connect(config.BASE_SQLITE) as connexion:
         table.to_sql(config.TABLE_NETTOYEE, connexion, if_exists="replace", index=False)
     print(
