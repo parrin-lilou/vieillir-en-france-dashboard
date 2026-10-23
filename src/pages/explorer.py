@@ -28,6 +28,8 @@ TEXTE_AIDE = (
     "Astuce : cliquez sur une barre de l'histogramme ou sur une intercommunalité de la "
     "carte pour ne garder en couleur que celles de la même tranche."
 )
+LIBELLE_LECTURE = "▶ Lecture"
+LIBELLE_PAUSE = "⏸ Pause"
 TEXTE_RETOUR = " Cliquez ailleurs sur la page pour tout réafficher."
 LECTURE_HISTOGRAMME = (
     "Lecture : chaque barre indique combien d'intercommunalités ont une valeur comprise "
@@ -166,17 +168,36 @@ def creer_reglages() -> html.Div:
                 [
                     html.Div(id="mention-annee", className="etiquette"),
                     html.Div(
-                        dcc.Slider(
-                            id="curseur-annee",
-                            min=annees[0],
-                            max=annees[-1],
-                            # step=None limite le curseur aux années disponibles.
-                            step=None,
-                            marks={annee: str(annee) for annee in annees},
-                            value=annees[-1],
-                            allow_direct_input=False,
-                        ),
+                        [
+                            html.Button(
+                                LIBELLE_LECTURE,
+                                id="bouton-lecture",
+                                n_clicks=0,
+                                className="bouton-lecture",
+                            ),
+                            html.Div(
+                                dcc.Slider(
+                                    id="curseur-annee",
+                                    min=annees[0],
+                                    max=annees[-1],
+                                    # step=None limite le curseur aux années disponibles.
+                                    step=None,
+                                    marks={annee: str(annee) for annee in annees},
+                                    value=annees[-1],
+                                    allow_direct_input=False,
+                                ),
+                                className="curseur-conteneur",
+                            ),
+                            # Minuteur de l'animation : désactivé tant que la lecture
+                            # n'est pas lancée, il fait ensuite avancer le curseur.
+                            dcc.Interval(
+                                id="minuteur-annees",
+                                interval=config.INTERVALLE_ANIMATION_MS,
+                                disabled=True,
+                            ),
+                        ],
                         id="zone-curseur",
+                        className="ligne-curseur",
                     ),
                 ],
                 className="reglage-annee",
@@ -246,17 +267,10 @@ def creer_graphiques() -> html.Div:
 
 
 def creer_mise_en_page() -> html.Div:
-    """Construit la page : bandeau, présentation, réglages, aide, graphiques et sources."""
+    """Construit la page : présentation, réglages, aide, graphiques et sources."""
     nombre_epci = f"{len(noms_epci()):,}".replace(",", " ")
     return html.Div(
         [
-            html.Div(
-                html.Div(
-                    html.Div(config.NOM_DASHBOARD, className="marque"),
-                    className="bandeau-contenu",
-                ),
-                className="bandeau",
-            ),
             html.Div(
                 [
                     html.Div(
@@ -299,7 +313,8 @@ def regler_curseur(nom_indicateur: str) -> tuple[Any, Any, Any, Any, dict[str, s
     if len(annees) == 1:
         return no_update, no_update, no_update, no_update, {"display": "none"}
     marques = {annee: str(annee) for annee in annees}
-    return annees[0], annees[-1], marques, annees[-1], {"display": "block"}
+    # Un style vide laisse s'appliquer la mise en page de la feuille de style.
+    return annees[0], annees[-1], marques, annees[-1], {}
 
 
 @callback(
@@ -396,3 +411,68 @@ def gerer_clic(
         None,
         clic_carte_apres,
     )
+
+
+def basculer_lecture(
+    en_pause: bool, annee: int | None, annees: list[int]
+) -> tuple[Any, bool]:
+    """Traite un clic sur le bouton : lance la lecture si elle est en pause, l'arrête sinon.
+
+    Une lecture lancée depuis la dernière année repart de la première.
+    """
+    if not en_pause:
+        return no_update, True
+    return (annees[0] if annee == annees[-1] else no_update), False
+
+
+def avancer_annee(annee: int | None, annees: list[int]) -> tuple[int, bool]:
+    """Passe à l'année suivante, et met en pause une fois la dernière année atteinte."""
+    position = annees.index(annee) if annee in annees else -1
+    annee_suivante = annees[position + 1]
+    return annee_suivante, annee_suivante == annees[-1]
+
+
+def piloter_animation(
+    declencheur: str | None, en_pause: bool, annee: int | None, annees: list[int]
+) -> tuple[Any, bool]:
+    """Décide de la suite de l'animation : année à afficher et état de pause.
+
+    Renvoie ``no_update`` comme année quand le curseur ne doit pas bouger.
+    """
+    if declencheur == "choix-indicateur" or len(annees) < 2:
+        # Changer d'indicateur arrête l'animation, qui portait sur d'autres années.
+        return no_update, True
+    if declencheur == "bouton-lecture":
+        return basculer_lecture(en_pause, annee, annees)
+    if en_pause:
+        return no_update, True
+    return avancer_annee(annee, annees)
+
+
+@callback(
+    Output("curseur-annee", "value", allow_duplicate=True),
+    Output("minuteur-annees", "disabled"),
+    Output("bouton-lecture", "children"),
+    Input("bouton-lecture", "n_clicks"),
+    Input("minuteur-annees", "n_intervals"),
+    Input("choix-indicateur", "value"),
+    State("minuteur-annees", "disabled"),
+    State("curseur-annee", "value"),
+    prevent_initial_call=True,
+)
+def animer_annees(
+    _clics: int,
+    _intervalles: int | None,
+    nom_indicateur: str,
+    en_pause: bool,
+    annee: int | None,
+) -> tuple[Any, bool, str]:
+    """Fait défiler les années automatiquement, avec un bouton Lecture / Pause.
+
+    Chaque tick du minuteur avance le curseur d'une année, ce qui redessine la carte
+    et l'histogramme par le callback ``actualiser_graphiques``.
+    """
+    annee_affichee, pause = piloter_animation(
+        ctx.triggered_id, en_pause, annee, annees_disponibles(nom_indicateur)
+    )
+    return annee_affichee, pause, LIBELLE_LECTURE if pause else LIBELLE_PAUSE
