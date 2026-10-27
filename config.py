@@ -130,8 +130,8 @@ SANS_COULEUR = "aucune"  # valeur du menu « couleur » qui désactive le colori
 # --- Dashboard ---------------------------------------------------------------
 NOM_DASHBOARD = "Vieillir en France"
 # Pages du dashboard : adresse -> texte du lien dans la barre de navigation.
-NAVIGATION = {"/explorer": "Explorer", "/comparer": "Comparer"}
-PAGE_PAR_DEFAUT = "/explorer"  # page affichée à l'adresse racine « / »
+NAVIGATION = {"/": "Accueil", "/explorer": "Explorer", "/comparer": "Comparer"}
+PAGE_PAR_DEFAUT = "/"  # page affichée quand l'adresse est vide
 TITRE_DASHBOARD = "Vieillir en France : où sont les territoires fragiles ?"
 HOTE = "127.0.0.1"
 PORT = 8050

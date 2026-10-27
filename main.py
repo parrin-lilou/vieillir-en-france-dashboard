@@ -6,10 +6,11 @@ from dash import Dash, Input, Output, callback, dcc, html
 
 import config
 from src.components.navbar import creer_bandeau
-from src.pages import comparer, explorer
+from src.pages import accueil, comparer, explorer
 
 # Adresse de chaque page -> fonction qui construit son contenu.
 PAGES: dict[str, Callable[[], html.Div]] = {
+    "/": accueil.creer_mise_en_page,
     "/explorer": explorer.creer_mise_en_page,
     "/comparer": comparer.creer_mise_en_page,
 }
@@ -40,7 +41,7 @@ def page_introuvable() -> html.Div:
     return html.Div(
         [
             html.H1("Page introuvable"),
-            dcc.Link("Revenir à la page Explorer", href=config.PAGE_PAR_DEFAUT),
+            dcc.Link("Revenir à l'accueil", href=config.PAGE_PAR_DEFAUT),
         ],
         className="page entete",
     )
@@ -53,7 +54,7 @@ def page_introuvable() -> html.Div:
 )
 def afficher_page(chemin: str | None) -> tuple[html.Div, html.Div]:
     """Affiche la page correspondant à l'adresse, et souligne son lien dans le bandeau."""
-    chemin_page = config.PAGE_PAR_DEFAUT if chemin in (None, "/") else chemin
+    chemin_page = chemin or config.PAGE_PAR_DEFAUT
     construire = PAGES.get(chemin_page)
     contenu = construire() if construire else page_introuvable()
     return creer_bandeau(chemin_page), contenu
