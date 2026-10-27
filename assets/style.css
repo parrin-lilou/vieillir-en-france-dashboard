@@ -197,3 +197,72 @@ body .dash-slider-thumb {
 body .dash-slider-thumb:focus {
     outline-width: 1px;
 }
+
+/* Page d'accueil : chiffres clés */
+.chiffres {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+}
+
+.chiffre {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.chiffre-valeur {
+    font-size: 1.7rem;
+    font-weight: 700;
+    color: #b23a0a;
+}
+
+.chiffre-texte {
+    font-size: 0.92rem;
+    color: #3d4852;
+}
+
+/* Page d'accueil : conclusions */
+.bloc h2 {
+    margin: 4px 0 10px;
+    font-size: 1.2rem;
+}
+
+.conclusions {
+    margin: 0;
+    padding-left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    line-height: 1.5;
+}
+
+/* Page d'accueil : liens vers les autres pages */
+.liens-pages {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 14px;
+}
+
+.lien-page {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+}
+
+.bouton-lien {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 0 16px;
+    border-radius: 6px;
+    background: #b23a0a;
+    color: #ffffff;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.bouton-lien:hover {
+    background: #8f2e08;
+}
