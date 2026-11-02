@@ -3,16 +3,20 @@
 import pandas as pd
 import pytest
 
+import config
+from src.utils.base_donnees import ecrire_table, lire_table, lister_tables
 from src.utils.clean_data import (
     calculer_part_seuls,
     construire_table_nettoyee,
+    enregistrer_tables_nettoyees,
     est_en_metropole,
     extraire_indicateur,
+    lire_tables_brutes,
     premier_point,
 )
 
-
 # 1. Tests de premier_point()
+
 
 def test_premier_point_polygone():
     """Vérifie l'extraction du premier point d'un polygone."""
@@ -46,29 +50,23 @@ def test_premier_point_multipolygone():
 
 # 2. Tests de est_en_metropole()
 
+
 def test_est_en_metropole_vrai():
     """Vérifie qu'un territoire métropolitain est accepté."""
-    contour = {
-        "geometry": {
-            "coordinates": [[[2.35, 48.85]]]
-        }
-    }
+    contour = {"geometry": {"coordinates": [[[2.35, 48.85]]]}}
 
     assert est_en_metropole(contour) is True
 
 
 def test_est_en_metropole_faux():
     """Vérifie qu'un territoire hors métropole est exclu."""
-    contour = {
-        "geometry": {
-            "coordinates": [[[55.5, -21.1]]]
-        }
-    }
+    contour = {"geometry": {"coordinates": [[[55.5, -21.1]]]}}
 
     assert est_en_metropole(contour) is False
 
 
 # 3. Tests de extraire_indicateur()
+
 
 def test_extraire_indicateur():
     """Vérifie la sélection et la conversion des données."""
@@ -132,6 +130,7 @@ def test_extraire_indicateur_sexe():
 
 
 # 4. Tests de calculer_part_seuls()
+
 
 def test_calculer_part_seuls():
     """Vérifie le calcul de la part des personnes âgées seules."""
@@ -268,3 +267,58 @@ def test_construire_table_nettoyee_sans_donnees():
     )
 
     assert resultat.empty
+
+
+# 6. Tests du stockage par source (SQLAlchemy)
+
+
+def test_lire_tables_brutes(tmp_path, monkeypatch):
+    """Vérifie que les tables brutes de chaque source sont rassemblées."""
+    monkeypatch.setattr(config, "BASE_SQLITE", tmp_path / "test.sqlite")
+    monkeypatch.setattr(
+        config,
+        "SOURCES_OBSERVATOIRE",
+        {"part_pop75p": "base", "tx_pauv_60": "base"},
+    )
+
+    for code, valeur in [("part_pop75p", "12"), ("tx_pauv_60", "20")]:
+        ecrire_table(
+            pd.DataFrame(
+                {
+                    "indicateur": [code],
+                    "codgeo": ["A"],
+                    "libgeo": ["EPCI A"],
+                    "an": ["2022"],
+                    "sexe": [None],
+                    "valeur": [valeur],
+                }
+            ),
+            f"raw_{code}",
+        )
+
+    resultat = lire_tables_brutes()
+
+    assert len(resultat) == 2
+    assert set(resultat["indicateur"]) == {"part_pop75p", "tx_pauv_60"}
+
+
+def test_enregistrer_tables_nettoyees(tmp_path, monkeypatch):
+    """Vérifie que chaque indicateur est enregistré dans sa propre table."""
+    monkeypatch.setattr(config, "BASE_SQLITE", tmp_path / "test.sqlite")
+    table = pd.DataFrame(
+        {
+            "codgeo": ["A", "B", "A"],
+            "libgeo": ["EPCI A", "EPCI B", "EPCI A"],
+            "indicateur": ["part_75_plus", "part_75_plus", "taux_pauvrete"],
+            "annee": [2022, 2022, 2021],
+            "valeur": [12.0, 15.0, 20.0],
+        }
+    )
+
+    resultat = enregistrer_tables_nettoyees(table)
+
+    assert resultat["cleaned_part_75_plus"] == 2
+    assert resultat["cleaned_taux_pauvrete"] == 1
+    # Une table est créée pour chaque indicateur du dashboard, même vide.
+    assert lister_tables() == sorted(f"cleaned_{nom}" for nom in config.INDICATEURS)
+    assert lire_table("cleaned_taux_pauvrete")["valeur"].tolist() == [20.0]

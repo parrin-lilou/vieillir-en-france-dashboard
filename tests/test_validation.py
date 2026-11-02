@@ -10,7 +10,6 @@ from src.utils.validation import (
     valider_table,
 )
 
-
 # 1. Données de test
 
 
@@ -154,6 +153,7 @@ def test_indicateur_non_pourcentage():
     resultat = LigneNettoyee(**donnees)
 
     assert resultat.valeur == 150
+
 
 # 3. Tests de decrire_erreur()
 

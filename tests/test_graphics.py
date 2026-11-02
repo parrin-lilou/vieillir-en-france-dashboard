@@ -1,14 +1,11 @@
 """Tests unitaires des composants graphiques du dashboard."""
 
 import pandas as pd
-import pytest
 import plotly.graph_objects as go
+import pytest
 
 import config
-from src.components import carte
-from src.components import histogramme
-from src.components import nuage
-
+from src.components import carte, histogramme, nuage
 
 # ---------------------------------------------------------
 # 1. Données fictives utilisées dans les tests
@@ -383,11 +380,13 @@ def test_creer_histogramme_titre():
 def test_creer_histogramme_valeur_manquante():
     """Vérifie que les valeurs manquantes sont conservées comme None."""
 
-    valeurs = pd.Series([
-        10.0,
-        float("nan"),
-        20.0,
-    ])
+    valeurs = pd.Series(
+        [
+            10.0,
+            float("nan"),
+            20.0,
+        ]
+    )
 
     figure = histogramme.creer_histogramme(
         valeurs,
@@ -571,9 +570,7 @@ def test_creer_nuage_sans_couleur(donnees_nuage):
         None,
     )
 
-    assert figure.data[0].marker.color == (
-        config.COULEUR_HISTOGRAMME
-    )
+    assert figure.data[0].marker.color == (config.COULEUR_HISTOGRAMME)
 
 
 def test_creer_nuage_avec_couleur(donnees_nuage):

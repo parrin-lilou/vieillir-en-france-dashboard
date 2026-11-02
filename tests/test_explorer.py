@@ -2,12 +2,10 @@
 
 import pandas as pd
 import pytest
-
 from dash import Patch, dcc, html, no_update
 
 import config
 from src.pages import explorer
-
 
 # ---------------------------------------------------------
 # 1. Données fictives pour les tests
@@ -705,8 +703,6 @@ def test_actualiser_graphiques(donnees_test, monkeypatch):
 
     assert "Lecture" in lecture
 
-    assert appels["titre"] == (
-        "Répartition des intercommunalités en 2021"
-    )
+    assert appels["titre"] == ("Répartition des intercommunalités en 2021")
 
     assert appels["valeurs"].loc["200000001"] == 10.2

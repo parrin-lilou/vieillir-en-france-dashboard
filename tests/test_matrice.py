@@ -1,15 +1,14 @@
 """Tests unitaires du composant matrice de corrélation."""
 
 import pandas as pd
-import pytest
 import plotly.graph_objects as go
+import pytest
 
 import config
 from src.components.matrice import (
     calculer_correlations,
     creer_matrice,
 )
-
 
 # ---------------------------------------------------------
 # 1. Données fictives pour les tests
@@ -84,10 +83,7 @@ def test_calculer_correlations_noms_courts(tableau_test):
     """Vérifie que la matrice utilise les noms courts du dashboard."""
     resultat = calculer_correlations(tableau_test)
 
-    noms_attendus = [
-        indicateur.nom_court
-        for indicateur in config.INDICATEURS.values()
-    ]
+    noms_attendus = [indicateur.nom_court for indicateur in config.INDICATEURS.values()]
 
     assert resultat.index.tolist() == noms_attendus
     assert resultat.columns.tolist() == noms_attendus
@@ -146,28 +142,21 @@ def test_creer_matrice_valeurs(tableau_test):
 
     for i in range(4):
         for j in range(4):
-            assert figure.data[0].z[i][j] == pytest.approx(
-                matrice.iloc[i, j]
-            )
+            assert figure.data[0].z[i][j] == pytest.approx(matrice.iloc[i, j])
 
 
 def test_creer_matrice_titre(tableau_test):
     """Vérifie que le graphique possède le bon titre."""
     figure = creer_matrice(tableau_test)
 
-    assert figure.layout.title.text == (
-        "Corrélations entre les indicateurs"
-    )
+    assert figure.layout.title.text == ("Corrélations entre les indicateurs")
 
 
 def test_creer_matrice_noms_axes(tableau_test):
     """Vérifie les noms courts affichés sur les axes."""
     figure = creer_matrice(tableau_test)
 
-    noms_attendus = [
-        indicateur.nom_court
-        for indicateur in config.INDICATEURS.values()
-    ]
+    noms_attendus = [indicateur.nom_court for indicateur in config.INDICATEURS.values()]
 
     assert list(figure.data[0].x) == noms_attendus
     assert list(figure.data[0].y) == noms_attendus

@@ -12,8 +12,10 @@ FOND_CARTE_BRUT = DOSSIER_BRUT / "epci.geojson"
 DOSSIER_NETTOYE = DOSSIER_DONNEES / "cleaned"
 FOND_CARTE = DOSSIER_NETTOYE / "epci_metropole.geojson"
 
-TABLE_BRUTE = "raw"
-TABLE_NETTOYEE = "cleaned"
+# Une table brute par source et une table nettoyée par indicateur :
+# raw_<code de la source> et cleaned_<nom de l'indicateur>.
+PREFIXE_TABLE_BRUTE = "raw_"
+PREFIXE_TABLE_NETTOYEE = "cleaned_"
 
 # --- Sources -----------------------------------------------------------------
 # Tous les indicateurs de l'Observatoire des territoires suivent le même modèle d'adresse.

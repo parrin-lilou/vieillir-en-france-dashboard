@@ -1,14 +1,13 @@
 """Tests unitaires des fonctions communes du dashboard."""
 
 import json
-import sqlite3
 
 import pandas as pd
 import pytest
 
 import config
 from src.utils import common_functions as cf
-
+from src.utils.base_donnees import ecrire_table, nom_table_nettoyee
 
 # ---------------------------------------------------------
 # 1. Création de données fictives pour les tests
@@ -84,33 +83,54 @@ def donnees_test(monkeypatch):
 
 
 def test_charger_table_nettoyee(tmp_path, monkeypatch):
-    """Vérifie la lecture d'une table SQLite temporaire."""
-    chemin_base = tmp_path / "test.sqlite"
-
-    table = pd.DataFrame(
-        {
-            "codgeo": ["200000001"],
-            "libgeo": ["EPCI A"],
-            "indicateur": ["part_75_plus"],
-            "annee": [2022],
-            "valeur": [15.0],
-        }
+    """Vérifie que les tables nettoyées de chaque indicateur sont rassemblées."""
+    monkeypatch.setattr(config, "BASE_SQLITE", tmp_path / "test.sqlite")
+    monkeypatch.setattr(
+        config,
+        "INDICATEURS",
+        {"part_75_plus": None, "taux_pauvrete": None},
     )
 
-    with sqlite3.connect(chemin_base) as connexion:
-        table.to_sql("cleaned", connexion, index=False)
-
-    monkeypatch.setattr(config, "BASE_SQLITE", chemin_base)
-    monkeypatch.setattr(config, "TABLE_NETTOYEE", "cleaned")
+    # Une table nettoyée par indicateur, comme dans la vraie base.
+    ecrire_table(
+        pd.DataFrame(
+            {
+                "codgeo": ["200000002", "200000001"],
+                "libgeo": ["EPCI B", "EPCI A"],
+                "indicateur": ["part_75_plus", "part_75_plus"],
+                "annee": [2022, 2022],
+                "valeur": [20.0, 15.0],
+            }
+        ),
+        nom_table_nettoyee("part_75_plus"),
+    )
+    ecrire_table(
+        pd.DataFrame(
+            {
+                "codgeo": ["200000001"],
+                "libgeo": ["EPCI A"],
+                "indicateur": ["taux_pauvrete"],
+                "annee": [2021],
+                "valeur": [12.0],
+            }
+        ),
+        nom_table_nettoyee("taux_pauvrete"),
+    )
 
     cf.charger_table_nettoyee.cache_clear()
 
     try:
         resultat = cf.charger_table_nettoyee()
 
-        assert len(resultat) == 1
-        assert resultat["codgeo"].iloc[0] == "200000001"
-        assert resultat["valeur"].iloc[0] == 15.0
+        assert len(resultat) == 3
+        assert set(resultat["indicateur"]) == {"part_75_plus", "taux_pauvrete"}
+        # Le tableau est trié par indicateur, année puis code.
+        assert resultat["codgeo"].tolist() == [
+            "200000001",
+            "200000002",
+            "200000001",
+        ]
+        assert resultat["valeur"].tolist() == [15.0, 20.0, 12.0]
     finally:
         cf.charger_table_nettoyee.cache_clear()
 
@@ -147,10 +167,7 @@ def test_charger_fond_carte(tmp_path, monkeypatch):
 
         assert resultat["type"] == "FeatureCollection"
         assert len(resultat["features"]) == 1
-        assert (
-            resultat["features"][0]["properties"]["nom"]
-            == "EPCI A"
-        )
+        assert resultat["features"][0]["properties"]["nom"] == "EPCI A"
     finally:
         cf.charger_fond_carte.cache_clear()
 
@@ -245,13 +262,9 @@ def test_tableau_comparaison(donnees_test, monkeypatch):
 
     assert resultat.loc["200000001", "libgeo"] == "EPCI A"
 
-    assert resultat.loc[
-        "200000001", "part_75_plus"
-    ] == 15.0
+    assert resultat.loc["200000001", "part_75_plus"] == 15.0
 
-    assert resultat.loc[
-        "200000001", "taux_pauvrete"
-    ] == 10.0
+    assert resultat.loc["200000001", "taux_pauvrete"] == 10.0
 
 
 def test_tableau_comparaison_valeur_manquante(
@@ -270,9 +283,7 @@ def test_tableau_comparaison_valeur_manquante(
 
     resultat = cf.tableau_comparaison()
 
-    assert pd.isna(
-        resultat.loc["200000003", "part_75_plus"]
-    )
+    assert pd.isna(resultat.loc["200000003", "part_75_plus"])
 
 
 # ---------------------------------------------------------

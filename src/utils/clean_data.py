@@ -1,25 +1,36 @@
-"""Nettoyage des données brutes et stockage dans la table ``cleaned``.
+"""Nettoyage des données brutes et stockage, une table ``cleaned_...`` par indicateur.
 
 Usage depuis la racine du projet (après get_data) :
     python -m src.utils.clean_data
 """
 
 import json
-import sqlite3
 from typing import Any
 
 import pandas as pd
 
 import config
+from src.utils.base_donnees import (
+    ecrire_table,
+    lire_table,
+    nom_table_brute,
+    nom_table_nettoyee,
+)
 from src.utils.validation import valider_table
 
 COLONNES_NETTOYEES = ["codgeo", "libgeo", "indicateur", "annee", "valeur"]
 
 
-def lire_table_brute() -> pd.DataFrame:
-    """Charge la table ``raw`` depuis la base SQLite."""
-    with sqlite3.connect(config.BASE_SQLITE) as connexion:
-        return pd.read_sql(f"SELECT * FROM {config.TABLE_BRUTE}", connexion)
+def lire_tables_brutes() -> pd.DataFrame:
+    """Charge et rassemble les tables brutes de toutes les sources.
+
+    Les tables ont la même structure : leur réunion permet d'extraire chaque indicateur,
+    et de croiser deux sources pour calculer la part des personnes âgées seules.
+    """
+    return pd.concat(
+        [lire_table(nom_table_brute(code)) for code in config.SOURCES_OBSERVATOIRE],
+        ignore_index=True,
+    )
 
 
 def premier_point(coordonnees: list[Any]) -> tuple[float, float]:
@@ -112,17 +123,29 @@ def construire_table_nettoyee(
     return table[COLONNES_NETTOYEES].sort_values(["indicateur", "annee", "codgeo"])
 
 
+def enregistrer_tables_nettoyees(table: pd.DataFrame) -> dict[str, int]:
+    """Enregistre chaque indicateur de la table nettoyée dans sa propre table.
+
+    Renvoie le nombre de lignes de chaque table, indexé par le nom de la table.
+    """
+    nombres_lignes = {}
+    for indicateur in config.INDICATEURS:
+        lignes = table[table["indicateur"] == indicateur]
+        nom = nom_table_nettoyee(indicateur)
+        ecrire_table(lignes, nom)
+        nombres_lignes[nom] = len(lignes)
+    return nombres_lignes
+
+
 def main() -> None:
-    """Nettoie le fond de carte et les indicateurs, puis alimente la table ``cleaned``."""
+    """Nettoie le fond de carte et les indicateurs, puis alimente les tables nettoyées."""
     codes_metropole = nettoyer_fond_carte()
-    table = construire_table_nettoyee(lire_table_brute(), codes_metropole)
+    table = construire_table_nettoyee(lire_tables_brutes(), codes_metropole)
     # Contrôle avant écriture : rien n'est enregistré si une ligne est incorrecte.
     valider_table(table)
-    with sqlite3.connect(config.BASE_SQLITE) as connexion:
-        table.to_sql(config.TABLE_NETTOYEE, connexion, if_exists="replace", index=False)
-    print(
-        f"Table {config.TABLE_NETTOYEE} : {len(table)} lignes, {len(codes_metropole)} EPCI."
-    )
+    for nom, nombre_lignes in enregistrer_tables_nettoyees(table).items():
+        print(f"Table {nom} : {nombre_lignes} lignes.")
+    print(f"{len(table)} lignes au total, {len(codes_metropole)} EPCI.")
 
 
 if __name__ == "__main__":

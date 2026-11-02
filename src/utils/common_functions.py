@@ -2,20 +2,27 @@
 
 import json
 import math
-import sqlite3
 from functools import lru_cache
 from typing import Any
 
 import pandas as pd
 
 import config
+from src.utils.base_donnees import lire_table, nom_table_nettoyee
 
 
 @lru_cache(maxsize=1)
 def charger_table_nettoyee() -> pd.DataFrame:
-    """Charge la table ``cleaned`` (lue une seule fois, puis gardée en mémoire)."""
-    with sqlite3.connect(config.BASE_SQLITE) as connexion:
-        return pd.read_sql(f"SELECT * FROM {config.TABLE_NETTOYEE}", connexion)
+    """Rassemble les tables nettoyées de tous les indicateurs en un seul tableau.
+
+    Le tableau est au format long (une ligne par EPCI, indicateur et année) : c'est la
+    forme qu'utilisent toutes les pages. Il est lu une seule fois, puis gardé en mémoire.
+    """
+    table = pd.concat(
+        [lire_table(nom_table_nettoyee(nom)) for nom in config.INDICATEURS],
+        ignore_index=True,
+    )
+    return table.sort_values(["indicateur", "annee", "codgeo"], ignore_index=True)
 
 
 @lru_cache(maxsize=1)

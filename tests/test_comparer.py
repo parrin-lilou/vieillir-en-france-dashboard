@@ -1,14 +1,12 @@
 """Tests unitaires de la page Comparer du dashboard."""
 
 import pandas as pd
-import pytest
 import plotly.graph_objects as go
-
+import pytest
 from dash import dcc, html, no_update
 
 import config
 from src.pages import comparer
-
 
 # ---------------------------------------------------------
 # 1. Données fictives pour les tests
@@ -94,9 +92,7 @@ def test_texte_correlation_memes_indicateurs(tableau_test):
         "part_75_plus",
     )
 
-    assert resultat == (
-        "Choisissez deux indicateurs différents pour les comparer."
-    )
+    assert resultat == ("Choisissez deux indicateurs différents pour les comparer.")
 
 
 def test_texte_correlation_positive(tableau_test):
@@ -259,10 +255,7 @@ def test_creer_reglages_identifiants():
     """Vérifie les identifiants des trois menus."""
     resultat = comparer.creer_reglages()
 
-    identifiants = [
-        bloc.children[1].id
-        for bloc in resultat.children
-    ]
+    identifiants = [bloc.children[1].id for bloc in resultat.children]
 
     assert identifiants == [
         "axe-x",
@@ -288,10 +281,7 @@ def test_creer_reglages_sans_couleur():
 
     menu_couleur = resultat.children[2].children[1]
 
-    valeurs = [
-        option["value"]
-        for option in menu_couleur.options
-    ]
+    valeurs = [option["value"] for option in menu_couleur.options]
 
     assert config.SANS_COULEUR in valeurs
 
