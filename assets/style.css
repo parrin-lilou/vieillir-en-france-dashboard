@@ -1,0 +1,268 @@
+/* Feuille de style du dashboard « Vieillir en France ».
+   Dash charge automatiquement les fichiers du dossier assets/. */
+
+body {
+    margin: 0;
+    background: #f6f4f0;
+    color: #1f2933;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    /* Couleur d'accent des composants Dash (curseur, menu déroulant), violette par
+       défaut. Elle est redéfinie sur body pour s'appliquer à tous les composants. */
+    --Dash-Fill-Interactive-Strong: #b23a0a;
+}
+
+/* Bandeau du haut */
+.bandeau {
+    background: #ffffff;
+    border-bottom: 1px solid #ddd8cf;
+}
+
+.bandeau-contenu {
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 60px;
+}
+
+/* Liens vers les pages, la page affichée étant soulignée */
+.navigation {
+    display: flex;
+    gap: 4px;
+}
+
+.lien-nav {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 14px;
+    color: #3d4852;
+    text-decoration: none;
+    border-bottom: 3px solid transparent;
+}
+
+.lien-nav:hover {
+    color: #1f2933;
+}
+
+.lien-nav.actif {
+    color: #1f2933;
+    font-weight: 700;
+    border-bottom-color: #b23a0a;
+}
+
+.marque {
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+/* Contenu de la page */
+.page {
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 16px 24px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.entete h1 {
+    margin: 0 0 4px;
+    font-size: 1.7rem;
+    letter-spacing: -0.02em;
+}
+
+.entete p {
+    margin: 0;
+    color: #3d4852;
+}
+
+/* Bloc blanc à bord fin : réglages et graphiques */
+.bloc {
+    background: #ffffff;
+    border: 1px solid #ddd8cf;
+    border-radius: 8px;
+    padding: 12px 16px;
+    box-sizing: border-box;
+}
+
+.reglages {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 32px;
+    align-items: flex-start;
+}
+
+.reglage-indicateur {
+    flex: 1 1 300px;
+    max-width: 420px;
+}
+
+/* Menus de la page « Comparer » : trois de même largeur */
+.reglage-comparer {
+    flex: 1 1 240px;
+    max-width: 380px;
+}
+
+.reglage-annee {
+    /* Largeur plafonnée : un curseur trop long est moins lisible et moins maniable. */
+    flex: 1 1 420px;
+    max-width: 720px;
+}
+
+/* Bouton de lecture et curseur d'années, sur une même ligne */
+.ligne-curseur {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.curseur-conteneur {
+    flex: 1;
+    min-width: 0;
+}
+
+.bouton-lecture {
+    min-height: 36px;
+    padding: 0 14px;
+    border: 1px solid #b23a0a;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #b23a0a;
+    font: inherit;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.bouton-lecture:hover {
+    background: #fbeee6;
+}
+
+.etiquette {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: #3d4852;
+}
+
+/* Encadré qui explique la sélection au clic, puis décrit la sélection en cours */
+.aide {
+    margin: 0;
+    padding: 10px 16px;
+    background: #fbeee6;
+    border: 1px solid #efd3c2;
+    border-radius: 8px;
+    color: #5a2a12;
+    font-size: 0.95rem;
+}
+
+/* Carte et histogramme côte à côte, la carte plus large */
+.graphiques {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    gap: 14px;
+}
+
+.note {
+    margin: 8px 0 0;
+    font-size: 0.88rem;
+    line-height: 1.45;
+    color: #3d4852;
+}
+
+.pied {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #3d4852;
+}
+
+/* Curseur d'années : poignée plus petite que celle de Dash par défaut */
+body .dash-slider-root {
+    --radix-slider-thumb-width: 12px;
+}
+
+body .dash-slider-thumb {
+    width: 12px;
+    height: 12px;
+}
+
+body .dash-slider-thumb:focus {
+    outline-width: 1px;
+}
+
+/* Page d'accueil : chiffres clés */
+.chiffres {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+}
+
+.chiffre {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.chiffre-valeur {
+    font-size: 1.7rem;
+    font-weight: 700;
+    color: #b23a0a;
+}
+
+.chiffre-texte {
+    font-size: 0.92rem;
+    color: #3d4852;
+}
+
+/* Page d'accueil : conclusions */
+.bloc h2 {
+    margin: 4px 0 10px;
+    font-size: 1.2rem;
+}
+
+.conclusions {
+    margin: 0;
+    padding-left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    line-height: 1.5;
+}
+
+/* Page d'accueil : liens vers les autres pages */
+.liens-pages {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 14px;
+}
+
+.lien-page {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+}
+
+.bouton-lien {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 0 16px;
+    border-radius: 6px;
+    background: #b23a0a;
+    color: #ffffff;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.bouton-lien:hover {
+    background: #8f2e08;
+}

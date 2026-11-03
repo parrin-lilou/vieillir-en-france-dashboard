@@ -9,5 +9,19 @@ wheels/
 # Virtual environments
 .venv
 
-# Données brutes, retéléchargées par get_data.py
-data/raw/
+# Les fichiers bruts de data/raw/ sont versionnés : l'Observatoire ne les diffuse plus.
+# Seuls les téléchargements interrompus (fichiers temporaires) sont ignorés.
+*.partiel
+
+# Vidéo de démonstration : publiée en ligne, pas dans le dépôt
+*.mp4
+*.mov
+
+# Caches des outils de vérification et de test
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/
+
+# Fichiers système et d'éditeur
+.DS_Store
+.vscode/
