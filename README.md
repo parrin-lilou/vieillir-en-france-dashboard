@@ -12,7 +12,7 @@ Projet réalisé par **Lilou Parrin** et **Noémie Graignac** (ESIEE Paris, E4 D
 
 ### Vidéo de démonstration
 
-[Voir la vidéo de démonstration](https://youtu.be/vwSOfejsFXE) (4 minutes)
+[Voir la vidéo de démonstration](https://youtu.be/5Td0CvM8GJ0) (4 minutes)
 
 ### Prérequis
 
