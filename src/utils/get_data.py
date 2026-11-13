@@ -86,7 +86,6 @@ def lire_classeur(indicateur: str) -> pd.DataFrame:
     Les colonnes renvoyées sont : indicateur, codgeo, libgeo, an, sexe, valeur.
     """
 
-    
     donnees = pd.read_excel(
         config.DOSSIER_BRUT / f"{indicateur}.xlsx",
         sheet_name=config.FEUILLE_DONNEES,
