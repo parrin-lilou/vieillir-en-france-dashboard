@@ -22,7 +22,7 @@ Projet réalisé par **Lilou Parrin** et **Noémie Graignac** (ESIEE Paris, E4 D
 ### Installation et lancement
 
 ```bash
-git clone https://git.esiee.fr/parrinl/dataproject.git dataproject
+git clone https://github.com/parrin-lilou/vieillir-en-france-dashboard.git
 cd dataproject
 uv sync
 uv run python main.py
